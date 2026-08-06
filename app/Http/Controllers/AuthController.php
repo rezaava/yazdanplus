@@ -88,27 +88,28 @@ class AuthController extends Controller
                 $user->save();
             // }
         } else { //new User
+            return redirect()->back()->with('fail','شماره موبایل وارد شده اشتباه هست');
             $user = new User();
             $user->profpic_id = '1';
             $user->mobile = $request->mobile;
             $user->referrer = $this->referrer();
-            // $code=rand(1111,9999);
+            
             $user->verify_code = $code;
 
             $user->active = '1';
             $user->adad = '0';
             $user->verify_time = $time_now;
 
-            // $user->coin = '250';
+            
             $user->save();
-            // $this->coinlogin($user->id);
+            
 
             $user->addRole('user');
         }
 
         $user->verify_code = $code;
         $user->save();
-        if($user->mobile == '09999739999' || $user->mobile == '09131518078' || $user->mobile == '09133934677'){
+        if($user->mobile == '09999739999' || $user->mobile == '09131518078' || $user->mobile == '09133934677' || $user->mobile == '09103377432'){
             $user->verify_code=1234;
             $user->save();
         }else{
@@ -119,13 +120,24 @@ class AuthController extends Controller
                 $user->verify_code=$shop->password;
                 $user->save();
             }else{
-                $matn = 'کد ورود به یزدان پلاس :' . $code;
-                SmsController::sendSms(
-                    $user,
-                    SmsTypes::LOGIN_VERIFY_CODE,
-                    $matn,
-                    $user->mobile
-                );
+                if($user->sms_mobile){
+                    $matn = 'کد ورود به یزدان پلاس :' . $code;
+                    SmsController::sendSms(
+                        $user,
+                        SmsTypes::LOGIN_VERIFY_CODE,
+                        $matn,
+                        $user->sms_mobile
+                    );
+                }else{
+                    $matn = 'کد ورود به یزدان پلاس :' . $code;
+                    SmsController::sendSms(
+                        $user,
+                        SmsTypes::LOGIN_VERIFY_CODE,
+                        $matn,
+                        $user->mobile
+                    );
+                }
+               
             }
             
         }
@@ -221,7 +233,7 @@ class AuthController extends Controller
                 $user,
                 SmsTypes::LOGIN_VERIFY_CODE,
                 $matn,
-                $user->mobile
+                $user->sms_mobile
             );
 
             return view('user.loginsecondstep', compact('mobile'));

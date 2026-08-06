@@ -31,6 +31,11 @@
           @csrf
 
           <div class="mb-3">
+            <label for="date" class="form-label">تاریخ</label>
+            <input  type="text" id="date" name="date" class="form-control" required placeholder="تاریخ را انتخاب کنید" readonly>
+          </div>
+
+          <div class="mb-3">
             <label for="monthYear" class="form-label">ماه و سال</label>
             <input type="text" id="monthYear" name="month_year" class="form-control"
             required autocomplete="off" placeholder="انتخاب تاریخ">
@@ -45,16 +50,21 @@
             <label class="form-label">مانده حساب</label>
             <input type="text" id="remaining" class="form-control" placeholder="باقی‌مانده" readonly>
           </div>
+          <div class="mb-3">
+            <label class="form-label">تخفیف</label>
+            <input type="text" id="off" name="offcalc" class="form-control" placeholder="باقی‌مانده" readonly>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">مانده با احتساب تخفیف</label>
+            <input type="text" id="off-total" class="form-control" placeholder="باقی‌مانده" readonly>
+          </div>
 
           <div class="mb-3">
             <label for="price" class="form-label">مبلغ</label>
             <input type="text" id="price" name="price" class="form-control" required placeholder="مبلغ را وارد کنید">
           </div>
 
-          <div class="mb-3">
-            <label for="date" class="form-label">تاریخ</label>
-            <input type="text" id="date" name="date" class="form-control" required placeholder="تاریخ را انتخاب کنید" readonly>
-          </div>
+          
 
           <div class="mb-3">
             <label for="description" class="form-label">توضیحات</label>
@@ -62,11 +72,11 @@
           </div>
 
           <input type="hidden" id="shop_id" name="shop_id" value="{{ $shop->id }}">
-          <input type="hidden" id="delay" name="delay">
+          <input   hidden id="delay" name="delay">
 
          <!-- تغییر دکمه به این شکل -->
           <button type="button" id="rizOrderBtn" class="btn w-100" style="background-color: #FFD8D8;">ریز خرید ها</button>
-          <button type="submit" class="btn w-100 mt-2" style="background-color: #FFD8D8;">ثبت</button>
+          <button type="submit" id="sabt" class="btn w-100 mt-2" style="display:none;background-color: #FFD8D8;">ثبت</button>
         </form>
       </div>
     </div>
@@ -76,6 +86,7 @@
 
 @section('script')
 <script>
+  let delay=0
   // دکمه ریز خرید ها
 $("#rizOrderBtn").on('click', function() {
     let monthYear = $("#monthYear").val();
@@ -93,6 +104,15 @@ $("#rizOrderBtn").on('click', function() {
 });
 </script>
 <script>
+  function p2e(str) {
+      const persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+      const arabic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+      for (let i = 0; i < 10; i++) {
+        str = str.replace(new RegExp(persian[i], 'g'), i)
+          .replace(new RegExp(arabic[i], 'g'), i);
+      }
+      return str;
+    }
   $(document).ready(function() {
 
     // 🔹 تبدیل فارسی به انگلیسی
@@ -137,18 +157,25 @@ $("#rizOrderBtn").on('click', function() {
         calendarSwitch: {
           enabled: false
         }
+      },
+      onSelect: function() {
+        
+        calcDelay();
       }
     });
 
     // 🔹 دریافت اطلاعات از سرور
     function fetchMonthSummary(monthYear) {
+      calcDelay();
+
       $.ajax({
         url: '/shops/get-month-summary',
         type: 'POST',
         data: {
           _token: '{{ csrf_token() }}',
           month_year: monthYear,
-          shop_id: $('#shop_id').val()
+          shop_id: $('#shop_id').val(),
+          delay:document.getElementById('delay').value
         },
         success: function(res) {
           if (res.success) {
@@ -156,9 +183,11 @@ $("#rizOrderBtn").on('click', function() {
             // 🔥 سه‌رقمی کردن کل حساب و مانده حساب
             $("#dd").val(numberFormat(res.total_sales));
             $("#remaining").val(numberFormat(res.remaining));
+            $("#off-total").val(numberFormat(res.off));
+            $("#off").val(numberFormat(res.remaining-res.off));
 
             // برای چک کردن محدودیت برداشت
-            $("#price").attr('data-remaining', res.remaining);
+            $("#price").attr('data-remaining', res.off);
           } else {
             alert(res.message || 'خطا در محاسبه');
           }
@@ -186,10 +215,13 @@ $("#rizOrderBtn").on('click', function() {
       $("#price-warning").remove();
 
       if (entered > remaining) {
+        document.getElementById('sabt').style.display="none"
         $(this).addClass('is-invalid');
         $('<small id="price-warning" class="text-danger">مبلغ نباید بیشتر از مانده حساب باشد.</small>')
           .insertAfter($(this));
       } else {
+        document.getElementById('sabt').style.display="block"
+
         $(this).removeClass('is-invalid');
       }
     });
@@ -198,22 +230,9 @@ $("#rizOrderBtn").on('click', function() {
 </script>
 
 <script>
-  $(document).ready(function() {
-
-    // تابع تبدیل اعداد فارسی → انگلیسی
-    function p2e(str) {
-      const persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-      const arabic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-      for (let i = 0; i < 10; i++) {
-        str = str.replace(new RegExp(persian[i], 'g'), i)
-          .replace(new RegExp(arabic[i], 'g'), i);
-      }
-      return str;
-    }
 
     // موقع SUBMIT شدن فرم
-    $("form").on("submit", function(e) {
-
+function calcDelay(){
       let monthYear = $("#monthYear").val(); // مثل 1404-05
       let tasvieDate = $("#date").val(); // مثل 1404/08/20
 
@@ -237,13 +256,10 @@ $("#rizOrderBtn").on('click', function() {
       m2 = parseInt(m2);
 
       // محاسبه اختلاف ماه
-      let delay = (y2 - y1) * 12 + (m2 - m1);
+       delay = (y2 - y1) * 12 + (m2 - m1);
       if (delay < 0) delay = 0;
-
       // ذخیره داخل اینپوت hidden
       $("#delay").val(delay);
-    });
-
-  });
-</script>
+    }
+    </script>
 @endsection

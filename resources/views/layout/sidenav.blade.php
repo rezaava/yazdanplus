@@ -53,6 +53,9 @@
             </a></li>
       @endif
       <!-- <li><a href="/shop-card"><i class="fa-solid fa-credit-card"></i>شماره کارت</a></li> -->
+      @if ($user)
+      <li><a href="/orders"><i class="fa-solid fa-shopping-cart"></i>خرید ها</a></li>
+      @endif
       @if ($user->hasRole('user') || $user->hasRole('shop_user'))
       <li><a href="/orders"><i class="fa-solid fa-shopping-cart"></i>خرید ها</a></li>
       @endif

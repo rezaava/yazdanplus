@@ -131,7 +131,6 @@
         color: #fff;
     }
 </style>
-<link href="{{ asset('dashboard/persian-datepicker.min.css') }}" rel="stylesheet">
 @endsection
 
 
@@ -142,26 +141,34 @@
     <div class="row">
 
         <div class="col-md-6 mb-2">
-            <input type="text" class="form-control" value="تعداد خرید ها : {{ $orders_count }}" readonly>
-        </div>
-        <div class="col-md-6">
-            <input type="text" class="form-control" value="کل : {{ number_format($all_price) }}" readonly>
+            <input type="text" class="form-control" value="تعداد فروشگاه فعال  : {{ $shops_count }}" readonly>
         </div>
         <div class="col-md-6 mb-2">
-            <input type="text" class="form-control" value="مانده : {{ number_format($mande) }}" readonly>
+            <input type="text" class="form-control" value="تعداد کاربران فعال  : {{ $users_count }}" readonly>
         </div>
-        <div class="col-md-6">
-                <input type="text" class="form-control" value="تعداد کل فروشگاه ها : {{ $all_shops_count }}" readonly>
+        <div class="col-md-6 mb-2">
+            <input type="text" class="form-control" value="تعداد هیئت علمی فعال  : {{ $elmi_count }}" readonly>
         </div>
-        <div class="col-md-6">
-            <a href="/drhadizade3" style="text-decoration: none;">
-                <input type="text" class="form-control" style="cursor: pointer;" value="تعداد خریدار فعال: {{ $users_count }}" readonly>
-            </a>
+        <div class="col-md-6 mb-2">
+            <input type="text" class="form-control" value="تعداد کارمند فعال  : {{ $karmand_count }}" readonly>
         </div>
-        <div class="col-md-6">
-            <a href="/drhadizade2" style="text-decoration: none;">
-            <input type="text" style="cursor: pointer;" class="form-control" value="تعداد فروشگاه فعال  : {{ $shops_count }}" readonly>
-            </a>
+        <div class="col-md-6 mb-2">
+            <input type="text" class="form-control" value="تعداد هیئت علمی بازنشسته  فعال  : {{ $elmi_b_count }}" readonly>
+        </div>
+        <div class="col-md-6 mb-2">
+            <input type="text" class="form-control" value="تعداد کارمند بازنشسته فعال  : {{ $karmand_b_count }}" readonly>
+        </div>
+        <div class="col-md-6 mb-2">
+            <input type="text" class="form-control" value="مجموع خرید هیئت علمی  : {{ number_format($elmi_order) }}" readonly>
+        </div>
+        <div class="col-md-6 mb-2">
+            <input type="text" class="form-control" value="مجموع خرید کارمندان  : {{ number_format($karmand_order) }}" readonly>
+        </div>
+        <div class="col-md-6 mb-2">
+            <input type="text" class="form-control" value="مجموع خرید هیئت علمی بازنشسته : {{ number_format($elmi_b_order) }}" readonly>
+        </div>
+        <div class="col-md-6 mb-2">
+            <input type="text" class="form-control" value="مجموع خرید کارمندان بازنشسته  : {{ number_format($karmand_b_order) }}" readonly>
         </div>
     </div>
 </div>
@@ -188,6 +195,9 @@
     </form>
 </div>
 
+
+
+
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-12">
@@ -195,45 +205,28 @@
                 <table id="salesTable" class="table table-bordered table-striped table-hover ">
                     <thead class="table-primary">
                         <tr>
-                            <th>شناسه</th>
-                            <th>نام فروشگاه</th>
-                            <th>خریدار</th>
-                            <th>نقش</th>
-                            <th>مبلغ
+                            <th>نام</th>
+                            <th>فامیل</th>
+                            <th>وضعیت</th>
+                            <th>موبایل</th>
+                            <th>موجودی
                                 (ریال)
                             </th>
-
-                            <!-- <th>کد تخفیف</th> -->
-                            <!-- <th>رفته به درگاه</th> -->
-                            <th>وضعیت</th>
-
-                            <th>تاریخ</th>
-                            <th>ساعت</th>
-                            <!-- <th>تایید پیش پرداخت</th>
-                            <th>تصویر فیش واریزی</th> -->
-
-                            <!-- <th>کامنت</th> -->
+                            <th>تعداد خرید</th>
+                            <th>مبلغ خرید</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @php
-                        $price_user = 0;
-                        $price_shop = 0;
-                        @endphp
-                        @foreach ($orders as $order)
+                        @foreach ($users as $user)
+                        @if ($user->orders_count > 0)
+                            
                         <tr class="text-center">
-                            <td style="text-align: center;">{{ $order->id }}</td>
                             <td>
-                                <a
-                                href="/shop/{{ $order['shop_order_id'] }}" style="text-decoration: none;">{{ $order['shop_order_name'] }}</a>
+                                {{ $user->name }}
                             </td>
-                            <td dir="ltr">
-                                <span style="direction: ltr">{{ $order['mobile'] }}</span>
-                                <br>
-                                {{ $order['user'] }}
-                            </td>
+                            <td style="text-align: center;">{{ $user->family }}</td>
                             <td style="text-align: center;">
-                            @switch($order['karbar']->type)
+                            @switch($user->type)
                                 @case(1)
                                     هیئت علمی
                                     @break
@@ -252,96 +245,26 @@
                                 ....
                                     
                             @endswitch
-                             </td>
-                            <td class="text-center rial">{{ number_format($order->price) }}
-                                {{-- ({{ number_format($order->final_price) }}) --}}
+                                
                             </td>
-
-                            <!-- <td>
-                    @if ($order->off_id)
-                    {{ $order->getOffCode() }}
-                    <br>
-                    تاثیر:
-                    <span class="rial">{{ $order->getOffValue() }}</span>
-                    @endif
-                </td> -->
-
-                            <!-- <td>
-                            @if ($order->authority != null)
-                            <div style="color: green;font-size: 20px;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                        fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
-                        <path
-                        d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z">
-                    </path>
-                        </svg>
-                    </div>
-                    @else
-                    <div>
-                        <p style="color:red;font-size: 20px;">&times;</p>
-                    </div>
-                    @endif
-                </td> -->
-                            <td>
-                                <p class="text-success">
-                                    @if ($order->status == 2)
-                                    پرداخت موفق
-                                    @endif
-                                </p>
+                            <td style="text-align: center;">{{ $user->mobile }}</td>
+                            <td style="text-align: center;">{{ $user->wallet }}</td>
+                            <td class="text-center">
+                                <span>{{ $user->orders_count }}</span>
                             </td>
-
-                            <td>{{ jdate($order->created_at)->format('Y/m/d') }}</td>
-                            <td>{{ jdate($order->created_at)->format('H:i') }}</td>
-
-                            <!-- <td>
-                                @if ($order->status == 8)
-                                تایید شده
-                                @elseif ($order->status == 7)
-                                <a href="/admin/taeed-order/{{ $order->id }}/{{ $order->month }}"
-                                class="btn btn-outline-info">تایید</a>
-                                <a href="/admin/rad-order/{{ $order->id }}/{{ $order->month }}"
-                                class="btn btn-outline-danger">رد </a>
-                                @elseif ($order->status == 9)
-                                رد شده
-                                @else
-                    پیش پرداخت ندارد
-                    @endif
-                    
-                </td> -->
-                            <!-- <td>
-                                @if(!empty($order->image))
-                    <a href="{{ asset($order->image) }}" target="_blank" rel="noopener noreferrer">
-                        <img src="{{ asset($order->image) }}" alt="توضیح عکس" width="80">
-                    </a>
-                    @else
-                    <span class="text-muted">----</span>
-                    @endif
-                </td> -->
-
-                            <!-- <td>  
-                                        <form action="/admin/add_comment/{{ $order->id }}" method="post">
-                                            @csrf
-                                            <textarea name="comment" cols="10" rows="3" class="form-control">
-                                                {{ $order->comment }}
-                                        </textarea>
-                                        <button class="btn" style="background-color: #ed3500;color: #fff;" type="submit">ذخیره</button>
-                                    </form>
-                                </td> -->
+                            <td class="text-center rial">
+                                {{ number_format($user->orders_sum) }}
+                            </td>
                         </tr>
+                        @endif
                         @endforeach
                     </tbody>
-                    <tfoot>
-                        <tr>
-                            <td class="rial">جمع کل پرداخت موفق: {{ $all_price }}</td>
-
-                        </tr>
-                    </tfoot>
                 </table>
             </div>
         </div>
     </div>
 </div>
-<div class="container">
+<!-- <div class="container">
     <div class="row">
 
         <form action="{{ route('order.excel') }}" method="POST" class="row g-3">
@@ -383,7 +306,7 @@
         </form>
 
     </div>
-</div>
+</div> -->
 
 
 <div class="modal fade" id="imageModal" tabindex="-1">

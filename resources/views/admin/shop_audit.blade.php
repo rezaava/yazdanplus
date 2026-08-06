@@ -2,6 +2,7 @@
 
 @section('onvan')
 حسابرسی
+{{ $shop->name }}
 @endsection
 
 @section('head')

@@ -10,17 +10,7 @@
 
     }
 
-    /* @if ($user == null)
-        .suha-navbar-toggler {
-            width: 56px !important;
-        }
-
-    @endif */
-    /* @media(max-width: 768px) {
-        .wwallet{
-            margin-left: 0;
-        }
-    } */
+   
 </style>
 
 <script>
@@ -137,6 +127,21 @@
                 </script>
             </form>
         </div> -->
+        <div class="navbar-support d-flex align-items-center gap-2 px-1 py-1" 
+     style="border: 2px solid #dc3545; border-radius: 50px; background: #fff5f5; transition: all 0.3s ease;"
+     onmouseover="this.style.background='#fff0f0'; this.style.borderColor='#b02a37';"
+     onmouseout="this.style.background='#fff5f5'; this.style.borderColor='#dc3545';">
+    
+     
+     <div class="support-info">
+         <a href="tel:09103377432" class="support-number fw-bold text-dark text-decoration-none" 
+         style="letter-spacing: 0.5px; direction: ltr; unicode-bidi: bidi-override;font-size: 14px;">
+         ۰۹۱۰-۳۳۷-۷۴۳۲
+        </a>
+    </div>
+    <i class="fas fa-phone-alt text-danger" style="font-size: 14px;"></i>
+</div>
+
         <div class="navbar-logo-container d-flex align-items-center">
             <!-- User Profile Icon -->
             @if ($user == null)

@@ -45,6 +45,7 @@ use App\Models\Condition;
 use App\Models\Contract;
 use App\Exports\OrderExport;
 use App\Exports\ShopRizOrderExport;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -110,6 +111,7 @@ class DashboardController extends Controller
             $shop_order = $order->shop_order;
             $order['shop_order_name'] = ($shop_order == null) ? '' : $shop_order->name;
             $order['shop_order_id'] = ($shop_order == null) ? '' : $shop_order->id;
+            if($order->status == 2)
             $all_price += $order->price;
         }
 
@@ -121,21 +123,54 @@ class DashboardController extends Controller
             return view('admin.list_sale', compact('orders', 'all_price', 'orders_count', 'mande','users_count'));
         }
     }
-    public function abc(){
-       
-            $orders = Order::where('status',2)->get();
-            $orders_count = Order::where('status',2)->count();
-            $orders_prices = Order::where('status', '2')->get(['price']);
-            $users_count = Order::whereIn('status',[2])->distinct('user_id')->count('user_id');
-            $ghestAndOff = Transaction::whereIn('type', ['5', '18'])->sum('value');
 
-            $all_price = 0;
-       
+    
+    public function abc(Request $request){
 
+        $selectedMonth = $request->get('month'); // عدد ۱ تا ۱۲
+    
+        $orders = Order::where('status', 2)->get();
+    
+        // فیلتر بر اساس ماه شمسی created_at
+        if ($selectedMonth) {
+            $orders = $orders->filter(function ($order) use ($selectedMonth) {
+                return (int) jdate($order->created_at)->format('m') === (int) $selectedMonth;
+            })->values();
+        }
+    
+        $order_ids = $orders->pluck('id');
+    
+        // این‌ها حالا بر اساس $orders فیلترشده محاسبه میشن
+        $orders_count = $orders->count();
+        $orders_prices = $orders->pluck('price');
+    
+        $users_count = Order::whereIn('id', $order_ids)
+            ->where('status', 2)
+            ->distinct('user_id')
+            ->count('user_id');
+    
+        $ghestAndOff = Transaction::whereIn('type', ['5', '18'])->sum('value');
+    
+        $all_price = 0;
+    
+        $shops = Shop::where('display', 1)->get();
+        $all_shops_count = Shop::where('display', 1)->count();
+        $shops_count = 0;
+        foreach ($shops as $shop) {
+            $orders_count2 = Order::whereIn('id', $order_ids)
+                ->where('shop_id', $shop->id)
+                ->where('status', 2)
+                ->count();
+            if ($orders_count2 > 0) {
+                $shops_count += 1;
+            }
+        }
+    
         foreach ($orders as $order) {
             $condition = Condition::where('id', $order->condition_id)->first();
-            $order['month'] = $condition->month;
+            $order['month'] = $condition->month ?? null;
             $user = User::find($order->user_id);
+            $order['karbar'] = $user;
             $order['user'] = $user->fullname();
             $order['mobile'] = $this->hideMobile($user->mobile);
             $order['time'] = $this->convertToPersianTimeadmin($order->created_at->format('H:i:s'));
@@ -144,12 +179,101 @@ class DashboardController extends Controller
             $order['shop_order_id'] = ($shop_order == null) ? '' : $shop_order->id;
             $all_price += $order->price;
         }
-
+    
         $mande = $all_price - $ghestAndOff;
-
-        return view('list_sale2', compact('orders', 'all_price', 'orders_count', 'mande','users_count'));
-        
+    
+        $persianMonths = [
+            1 => 'فروردین', 2 => 'اردیبهشت', 3 => 'خرداد',
+            4 => 'تیر', 5 => 'مرداد', 6 => 'شهریور',
+            7 => 'مهر', 8 => 'آبان', 9 => 'آذر',
+            10 => 'دی', 11 => 'بهمن', 12 => 'اسفند',
+        ];
+    
+        return view('list_sale2', compact(
+            'orders', 'all_price', 'orders_count', 'mande',
+            'users_count', 'shops_count', 'all_shops_count',
+            'selectedMonth', 'persianMonths'
+        ));
     }
+
+    
+    public function drhadizade2(){
+        $shops=Shop::where('display',1)->get();
+        $shops_count=0;
+        foreach($shops as $shop){
+            $orders_count=Order::where('shop_id',$shop->id)->where('status',2)->count();
+            if($orders_count > 0){
+                $shops_count += 1 ;
+            }
+            $shop['orders_count']=$orders_count;
+            $shop['orders_sum']=Order::where('shop_id',$shop->id)->where('status',2)->sum('price');
+        }
+       return view('drhadizade2',compact('shops','shops_count'));
+    }
+
+    public function drhadizade3(Request $request){
+
+
+        $selectedMonth = $request->get('month');
+
+$orders = Order::where('status', 2)->get();
+
+if ($selectedMonth) {
+    $orders = $orders->filter(function ($order) use ($selectedMonth) {
+        return (int) jdate($order->created_at)->format('m') === (int) $selectedMonth;
+    })->values();
+}
+
+$order_ids = $orders->pluck('id');
+
+       $users=User::get();
+       $shops=Shop::where('display',1)->get();
+       $shops_count=0;
+       foreach($shops as $shop){
+        $orders_count = $orders->where('shop_id', $shop->id)->count();
+    
+        if($orders_count > 0){
+            $shops_count++;
+        }
+    }
+    foreach($users as $user){
+
+        $userOrders = $orders->where('user_id', $user->id);
+    
+        $user['orders_count'] = $userOrders->count();
+        $user['orders_sum'] = $userOrders->sum('price');
+    }
+    $users_ids = $orders->pluck('user_id')->unique();
+
+$users_count = $users_ids->count();
+
+    $elmi_count=User::whereIn('id',$users_ids)->where('type',1)->count();
+    $elmi_ids=User::whereIn('id',$users_ids)->where('type',1)->pluck('id');
+    $elmi_order = $orders->whereIn('user_id', $elmi_ids)->sum('price');
+
+    $karmand_count=User::whereIn('id',$users_ids)->where('type',2)->count();
+    $karmand_ids=User::whereIn('id',$users_ids)->where('type',2)->pluck('id');
+    $karmand_order = $orders->whereIn('user_id', $karmand_ids)->sum('price');
+
+    $elmi_b_count=User::whereIn('id',$users_ids)->where('type',3)->count();
+    $elmi_b_ids=User::whereIn('id',$users_ids)->where('type',3)->pluck('id');
+    $elmi_b_order = $orders->whereIn('user_id', $elmi_b_ids)->sum('price');
+
+    $karmand_b_count=User::whereIn('id',$users_ids)->where('type',4)->count();
+    $karmand_b_ids=User::whereIn('id',$users_ids)->where('type',4)->pluck('id');
+    $karmand_b_order = $orders->whereIn('user_id', $karmand_b_ids)->sum('price');
+
+    $persianMonths = [
+        1 => 'فروردین', 2 => 'اردیبهشت', 3 => 'خرداد',
+        4 => 'تیر', 5 => 'مرداد', 6 => 'شهریور',
+        7 => 'مهر', 8 => 'آبان', 9 => 'آذر',
+        10 => 'دی', 11 => 'بهمن', 12 => 'اسفند',
+    ];
+             
+    return view('drhadizade3',compact('users','shops_count','users_count','elmi_count',
+    'karmand_count','elmi_b_count','karmand_b_count','elmi_order','karmand_order','elmi_b_order','karmand_b_order','persianMonths','selectedMonth'));
+    }
+
     public function add_comment(Request $req,$id){
         $order=Order::find($id);
         $order->comment=$req->comment;
@@ -1102,6 +1226,7 @@ class DashboardController extends Controller
         $shop->telephone = $request->phone;
         $shop->address = $request->address;
         $shop->sale_type = $request->sale_type;
+        $shop->transaction_type = 1;
         $shop->decription = $request->description;
         $shop->refferer_id = $user->id;
         $shop->off_title = $request->off;
@@ -1323,12 +1448,15 @@ class DashboardController extends Controller
 
         // مبلغ
         $fee = (int) str_replace(',', '', $request->price);
-
+        $offcalc = (int) str_replace(',', '', $request->offcalc);
         // قرارداد
         $contract = Contract::where('shop_id', $request->id)
-            ->where('delay', $request->delay)
+            ->where('delay','>=', $request->delay)
             ->first();
-
+            // Log::info('fee:'.$fee);
+            // Log::info('contract->off:'.$contract->off);
+            // Log::info('kol:'.(($fee * $contract->off) / 100));
+            // return (($fee * $contract->off) / 100);
         $tasvie_shop->shop_id  = $request->id;
         $tasvie_shop->type     = 5;
         $tasvie_shop->fee      = $fee;
@@ -1360,16 +1488,15 @@ class DashboardController extends Controller
         if ($contract) {
             $tasvie_shop = new Transaction();
 
-            // مبلغ
-            $fee = (int) str_replace(',', '', $request->price);
-
             // قرارداد
 
             $tasvie_shop->shop_id  = $request->id;
             $tasvie_shop->type     = 18;
             $tasvie_shop->description = 'تخفیف برای تسویه با شناسه ' . $desc_id . '';
-            $tasvie_shop->fee      = (($fee * $contract->off) / 100);
-            $tasvie_shop->value    = (($fee * $contract->off) / 100);
+            // $tasvie_shop->fee      = (($fee * $contract->off) / 100);
+            $tasvie_shop->fee      = $offcalc;
+            // $tasvie_shop->value    = (($fee * $contract->off) / 100);
+            $tasvie_shop->value    = $offcalc;
             $tasvie_shop->darsad   = $request->darsad;
 
             // محاسبه تخفیف
@@ -1677,7 +1804,7 @@ class DashboardController extends Controller
         }
 
         
-            $users=User::whereIn('type',[1,2])->get();
+            $users=User::whereIn('type',[1,2,3,4])->get();
         // محاسبه مجموع value برای هر کاربر
         foreach ($users as $user) {
             $order=Order::where('user_id',$user->id)->where('status',2)->pluck('id');

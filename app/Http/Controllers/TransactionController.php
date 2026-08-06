@@ -105,7 +105,9 @@ class TransactionController extends Controller
             if ($order->sms_code == $req->code) {
                 DB::beginTransaction();
                 try {
+                    $oldwallet= $user->wallet;
                     $user->wallet -= $transactions_value;
+                    $order->description='شارژ '.$user->name.' '.$user->family.' از '.$oldwallet.'به'.$user->wallet.'کم شد';
                     $user->save();
                     $order->status = 2;
                     $order->save();

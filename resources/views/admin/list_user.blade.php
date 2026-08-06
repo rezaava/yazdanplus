@@ -208,7 +208,10 @@
                                 هیئت علمی
                                 @elseif ($user->type == 2)
                                     کارمند
-
+                                    @elseif ($user->type == 3)
+                                    هیئت علمی بازنشسته
+                                    @elseif ($user->type == 4)
+                                    کارمند بازنشسته
                                     @else
                                     ...
                                 @endif

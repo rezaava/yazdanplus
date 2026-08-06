@@ -11,11 +11,13 @@
             <tr>
                 <th>#</th>
                 <th>تاریخ</th>
-               
                 <th>مبلغ</th>
             </tr>
             </thead>
             <tbody>
+                @php
+                    $sum=0;
+                @endphp
             @foreach($installments as $i => $item)
                 <tr>
                     <td>{{ $i + 1 }}</td>
@@ -24,9 +26,19 @@
                     <td>{{ number_format($item->price) }}
                        {{--  ({{ number_format($item->final_price) }})  --}}
                     </td>
+                    @php
+                        $sum += $item->price;
+                    @endphp
                 </tr>
             @endforeach
             </tbody>
+            <tfoot>
+                <td></td>
+                <td>مجموع: </td>
+                <td>
+                    {{ number_format($sum) }}
+                </td>
+            </tfoot>
         </table>
     @endif
 

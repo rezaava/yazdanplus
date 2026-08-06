@@ -31,6 +31,10 @@
                             @endif
                         @endforeach
                     @endif
+
+                    @if (Session::has('fail'))
+                    <div class="text-danger mb-2">{{ Session::get('fail') }}</div>
+                    @endif
                     <form action="/verified-code" method="POST">
                         @csrf
                         <label for="username" class="mb-3">شماره موبایل خود را وارد کنید</label>

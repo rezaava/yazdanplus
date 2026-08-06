@@ -319,7 +319,7 @@ active
                     </div>
                     @endforeach
 
-                    @if ($user && $user->id == 766 || $user && $user->id == 1073 )
+                    @if ($user && $user->id == 766 || $user && $user->id == 1073 || $user && $user->id == 1387 )
                     <div class="col-md-6 ">
                         <div class="single-vendor-wrap p-4 bg-img bg-overlay"
                             style="background-image: url('{{ $shop->cover }}');">

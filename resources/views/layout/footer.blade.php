@@ -68,7 +68,7 @@
             <div class="col-12">
                 <hr class="mb-4 text-dark">
                 <div class="text-center">
-                    <p class="mb-0">© تمامی حقوق این سایت محفوظ است</p>
+                    <p class="mb-0">© تمامی حقوق این سایت محفوظ و متعلق به <b>شرکت توسعه گران آرتان پویا</b> یزد می باشد</p>
                 </div>
             </div>
         </div>

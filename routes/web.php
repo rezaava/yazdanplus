@@ -18,6 +18,7 @@ use App\Http\Controllers\ContractController;
 use App\Exports\ShopTransactionsExport;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Admin22Controller;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BuyController;
 use App\Http\Controllers\DashboardController;
@@ -40,6 +41,14 @@ use Maatwebsite\Excel\Facades\Excel;
 */
 
 // Route::prefix('/shops')->group(function () {
+    Route::get('/b_order', [AdminController::class, 'b_order']);
+
+
+    Route::get('/sms_mobile', [ShopController::class, 'sms_mobile']);
+
+    Route::get('/contract_test', [ShopController::class, 'contract_test']);
+
+    Route::get('/list', [ShopController::class, 'listShop']);
 
     Route::get('/role', [DashboardController::class, 'role']);
 
@@ -47,6 +56,8 @@ Route::get('/shop/{slug}', [ShopController::class, 'shop']);
 Route::get('/shop/{slug}/{slug_name}', [ShopController::class, 'shop1']);
 
 Route::get('/drhadizade', [DashboardController::class, 'abc']);
+Route::get('/drhadizade2', [DashboardController::class, 'drhadizade2']);
+Route::get('/drhadizade3', [DashboardController::class, 'drhadizade3']);
 
 Route::get('/', [IndexController::class, 'index']);
 Route::get('/contact', [IndexController::class, 'contact']);
@@ -99,7 +110,7 @@ Route::get('/mablagh_ghest', [TransactionController::class, 'mablagh_ghest'])->m
 
 
 Route::prefix('/admin')->middleware('auth')->group(function () {
-
+    
 
     Route::get('/import_excel', [AdminController::class, 'import_excel']);
     Route::post('/import_excel', [AdminController::class, 'import_excel_post']);
@@ -192,6 +203,7 @@ Route::post('/shops/{id}/audit-preview', [DashboardController::class, 'auditPrev
 
 Route::post('/admin/shops/get-month-summary', [\App\Http\Controllers\ShopController::class, 'getMonthSummary'])
     ->name('admin.shops.getMonthSummary');
+    
 Route::post('/shops/get-month-summary', [ShopController::class, 'getMonthSummary']);
 
 

@@ -175,6 +175,7 @@ class BuyController extends Controller
             $order->final_price = $req->price;
             $order->price = $req->price * (100 - $condition->advance_payment)/100;
             $order->off = $shop->off;
+            $order->transaction_type = $shop->transaction_type;
             $order->Purchase_type = $req->Purchase_type;
             $order->user_off = $shop->user_off;
             $order->status = '1';
@@ -214,7 +215,11 @@ class BuyController extends Controller
             // $user->save();
             if ($user->wallet >= $baghimande) {
                 $code = rand(1111, 9999);
-                $order->sms_code = $code;
+                if ($order->shop_id == 8) {
+                    $order->sms_code = 1111;
+                }else{
+                    $order->sms_code = $code;
+                }
                 $order->status = 7;
                 $order->save();
                 $tarikh = Jalalian::now();
@@ -259,7 +264,11 @@ class BuyController extends Controller
             //     $order->image = $destination_path . '/' . $file_name;
             // }
             $code = rand(1111, 9999);
-            $order->sms_code = $code;
+            if ($order->shop_id == 8) {
+                $order->sms_code = 1111;
+            }else{
+                $order->sms_code = $code;
+            }
             $order->status = 7;
             $order->save();
             $tarikh = Jalalian::now();
