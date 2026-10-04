@@ -9,7 +9,7 @@
     <div class="sidenav-profile">
       <a href="/profile">
         <div class="user-profile"><img
-            @if ($profile==null) src="#" @else src='{{ asset("$profile->address") }}' @endif
+            @if ($profile==null) src="{{  asset('user_profile/user.webp') }}" @else src='{{ asset("$profile->address") }}' @endif
             alt="profile"></div>
 
       </a>
@@ -62,6 +62,10 @@
       {{-- <li><a href="/transactions"><i class="fa-solid fa-list"></i>گردش حساب</a></li> --}}
       <li><a href="/reportform">
           <i class="fa-solid fa-file-text"></i>گردش حساب
+        </a>
+      </li>
+      <li><a href="/datis_orders">
+          <i class="fa-solid fa-file-text"></i> خرید های داتیس
         </a>
       </li>
        @if ($user->hasRole('shop_admin'))  

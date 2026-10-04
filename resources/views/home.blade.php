@@ -143,8 +143,206 @@ active
   background-color: rgba(255,255,255,0.3);
   color: red;
 }
+/* بنر ویژه بالای سرچ */
+.special-home-banner {
+    display: block;
+    width: 100%;
+    padding: 22px 30px;
+    border-radius: 16px;
+    text-decoration: none !important;
+    background: linear-gradient(135deg, #e22d4e, #d25c6d);
+    /* box-shadow: 0 8px 25px rgba(74, 0, 224, 0.25); */
+    transition: all 0.25s ease;
+    direction: rtl;
+}
+
+.special-home-banner:hover {
+    transform: translateY(-3px);
+    /* box-shadow: 0 12px 30px rgba(74, 0, 224, 0.35); */
+}
+
+.special-home-banner-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.special-home-banner-title {
+    display: block;
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.special-home-banner-text {
+    display: block;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 15px;
+}
+
+.special-home-banner-icon {
+    color: #fff;
+    font-size: 30px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 576px) {
+    .special-home-banner {
+        padding: 18px 20px;
+        margin-top: 10px;
+    }
+
+    .special-home-banner-title {
+        font-size: 19px;
+    }
+
+    .special-home-banner-text {
+        font-size: 13px;
+    }
+
+    .special-home-banner-icon {
+        font-size: 23px;
+    }
+}
+
+/* بنر فراخوان افزایش سرمایه - فقط پس‌زمینه متفاوت */
+.special-home-banner--stock {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+}
 
 
+/* ---------- CATEGORY FILTER ---------- */
+.category-filter-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.category-filter {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: #f8fafc;
+    border-radius: 50px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.category-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 9px 22px;
+    border-radius: 50px;
+
+    background: #ffffff;
+    color: #1e293b !important;
+    text-decoration: none !important;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    border: 2px solid #e2e8f0;
+
+    transition: all 0.25s ease;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.category-btn i {
+    font-size: 14px;
+    color: #64748b;
+    transition: color 0.25s ease;
+}
+
+.category-btn:hover {
+    background: #fef2f2;
+    border-color: #dc2626;
+    color: #dc2626 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(220, 38, 38, 0.15);
+}
+
+.category-btn:hover i {
+    color: #dc2626;
+}
+
+/* حالت فعال */
+.category-btn.active {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #fff !important;
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
+}
+
+.category-btn.active i {
+    color: #fff;
+}
+
+.category-btn.active:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    color: #fff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+}
+
+@media (max-width: 768px) {
+    .category-filter-wrap {
+        padding: 10px 0;
+        overflow: hidden;
+    }
+
+    .category-filter {
+        padding: 10px 16px;
+        gap: 8px;
+        border-radius: 16px;
+
+        /* 👇 اسکرول افقی */
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        justify-content: flex-start;
+
+    }
+
+    .category-filter::-webkit-scrollbar {
+    height: 4px;
+}
+
+.category-filter::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.category-filter::-webkit-scrollbar-thumb {
+    background: #dc2626;
+    border-radius: 10px;
+}
+
+    .category-btn {
+        padding: 8px 16px;
+        font-size: 13px;
+        flex-shrink: 0; /* 👈 جلوگیری از فشرده شدن دکمه‌ها */
+    }
+
+    .category-btn i {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 400px) {
+    .category-btn {
+        padding: 6px 14px;
+        font-size: 12px;
+    }
+}
 </style>
 
 <div class="container">
@@ -204,13 +402,178 @@ active
             }
         }
     </script>
+
+
+    <!--<div class="col-md-6">-->
+    <!--    <a href="/survey/mobile" class="special-home-banner">-->
+    <!--        <div class="special-home-banner-content">-->
+    <!--            <div>-->
+    <!--                <span class="special-home-banner-title">-->
+    <!--                    نظر سنجی-->
+    <!--                </span>-->
+    <!--                <span class="special-home-banner-text">-->
+    <!--                    برای مشاهده کلیک کنید -->
+    <!--                </span>-->
+    <!--            </div>-->
+
+    <!--            <i class="fa-solid fa-arrow-left special-home-banner-icon"></i>-->
+    <!--        </div>-->
+    <!--    </a>-->
+    <!--</div>-->
+    
+<div class="row mb-4 mt-5">
+
+<div class="col-md-12">
+    <a href="/stock" class="special-home-banner special-home-banner--stock">
+            <div class="special-home-banner-content">
+                <div>
+                    <span class="special-home-banner-title">
+                    فراخوان افزایش سرمایه   
+                    </span>
+                    <span class="special-home-banner-text">
+                    فراخوان افزایش سرمایه و توسعه جامعه سهام‌داران صندوق رفاه دانشگاه یزد
+                    </span>
+                </div>
+
+                <i class="fa-solid fa-arrow-left special-home-banner-icon"></i>
+            </div>
+        </a>
+    </div>
+
+    <!-- <div class="col-md-6 mt-lg-2">
+        <a href="/datis" class="special-home-banner">
+            <div class="special-home-banner-content">
+                <div>
+                    <span class="special-home-banner-title">
+                        محصولات روغن برند داتیس   
+                    </span>
+                    <span class="special-home-banner-text">
+                        برای مشاهده لیست محصولات کلیک کنید 
+                    </span>
+                </div>
+
+                <i class="fa-solid fa-arrow-left special-home-banner-icon"></i>
+            </div>
+        </a>
+    </div> -->
+
+    <!-- <div class="col-md-6 mt-lg-2">
+        <a href="/Arde" class="special-home-banner">
+            <div class="special-home-banner-content">
+                <div>
+                    <span class="special-home-banner-title">
+                    محصولات ارده  
+                    </span>
+                    <span class="special-home-banner-text">
+                    برای مشاهده لیست محصولات کلیک کنید 
+                    </span>
+                </div>
+
+                <i class="fa-solid fa-arrow-left special-home-banner-icon"></i>
+            </div>
+        </a>
+    </div> -->
+
+    <!-- <div class="col-md-6 mt-lg-2">
+        <a href="/honey" class="special-home-banner">
+            <div class="special-home-banner-content">
+                <div>
+                    <span class="special-home-banner-title">
+                    محصولات عسل بنادکوک  
+                    </span>
+                    <span class="special-home-banner-text">
+                    برای مشاهده لیست محصولات کلیک کنید 
+                    </span>
+                </div>
+
+                <i class="fa-solid fa-arrow-left special-home-banner-icon"></i>
+            </div>
+        </a>
+    </div> -->
+    <div class="col-md-6 mt-lg-2">
+        <a href="/kerem" class="special-home-banner">
+            <div class="special-home-banner-content">
+                <div>
+                    <span class="special-home-banner-title">
+                     محصولات کرم بیسکویت داتیس  
+                    </span>
+                    <span class="special-home-banner-text">
+                    برای مشاهده لیست محصولات کلیک کنید 
+                    </span>
+                </div>
+
+                <i class="fa-solid fa-arrow-left special-home-banner-icon"></i>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 mt-lg-2">
+        <a href="/aroosha" class="special-home-banner">
+            <div class="special-home-banner-content">
+                <div>
+                    <span class="special-home-banner-title">
+                    محصولات روغن داتیس (برند آروشا) 
+                    </span>
+                    <span class="special-home-banner-text">
+                    برای مشاهده لیست محصولات کلیک کنید 
+                    </span>
+                </div>
+
+                <i class="fa-solid fa-arrow-left special-home-banner-icon"></i>
+            </div>
+        </a>
+    </div>
+
+    <!-- <div class="col-md-4">
+        <a href="/datis2" class="special-home-banner">
+            <div class="special-home-banner-content">
+                <div>
+                    <span class="special-home-banner-title">
+                    داتیس (ویژه کارکنان شرکتی دانشگاه یزد)  
+                    </span>
+                    <span class="special-home-banner-text">
+                    برای مشاهده لیست محصولات کلیک کنید 
+                    </span>
+                </div>
+                <i class="fa-solid fa-arrow-left special-home-banner-icon"></i>
+            </div>
+        </a>
+    </div> -->
+    
+</div>
+
+
+{{-- فیلتر دسته بندی --}}
+<div class="row mt-4 mb-3">
+    <div class="col-md-12">
+        <div class="category-filter-wrap">
+            <div class="category-filter">
+                {{-- همه فروشگاه‌ها --}}
+                <a href="{{ url('/') }}#shops"
+                   class="category-btn {{ !request('cat') ? 'active' : '' }}">
+                    <i class="fa-solid fa-store"></i>
+                    همه فروشگاه‌ها
+                </a>
+
+                {{-- دسته بندی‌ها --}}
+                @foreach ($categories as $category)
+                    <a href="{{ url('/?cat=' . $category->id) }}#shops"
+                       class="category-btn {{ request('cat') == $category->id ? 'active' : '' }}">
+                        {{ $category->name }}
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    </div>
+</div>
+
+
     <!-- Products -->
     <div class="row mt-5 mb-2">
 
-        <div class="col-md-6">
+        <div class="col-md-12" style="display: flex;justify-content: center;">
             <form action="/" method="get" class="home-page-title-search-box mr-3">
                 <div class="input-group text-start" style="height:100%;">
-                    <input class="form-control" id="search" name="search" placeholder="انتخاب فروشگاه"
+                    <input class="form-control" id="search" name="search" placeholder="نام فروشگاه یا کالا را وارد کنید"
                         autocomplete="off" type="search" <?php
                                                             if (isset($_GET['search'])) {
                                                                 echo 'value=' . $_GET['search'] . '';
@@ -253,28 +616,6 @@ active
                     });
                 </script>
             </form>
-        </div>
-        <div class="col-md-6">
-            <!--             
-             <select id="filter" class="form-select mt-2">
-                <option selected>دسته بندی</option>
-                <option value="1">One</option>
-                <option value="2">Two</option>
-                <option value="3">Three</option>
-              </select>
-             <select id="filter" class="form-select mt-2">
-                <option selected>دسته بندی</option>
-                <option value="1">One</option>
-                <option value="2">Two</option>
-                <option value="3">Three</option>
-              </select>
-             <select id="filter" class="form-select mt-2">
-                <option selected>دسته بندی</option>
-                <option value="1">One</option>
-                <option value="2">Two</option>
-                <option value="3">Three</option>
-              </select>
-            </div> -->
         </div>
                     
         <div class="top-products-area py-3" id="shops">
@@ -359,9 +700,6 @@ active
         <div class="container mt-4 ">
             <ul class="pagination justify-content-center">
                 {!! $shops->links('vendor.pagination.bootstrap-5') !!}
-
-
-
             </ul>
         </div>
 

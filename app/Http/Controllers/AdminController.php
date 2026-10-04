@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ExcelUsers;
 use App\Models\Condition;
 use App\Models\Order;
 use App\Models\Shop;
@@ -9,97 +10,112 @@ use App\Models\Transaction;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use Morilog\Jalali\Jalalian;
 
 class AdminController extends Controller
 {
     public function import_excel(){
         return view('admin.import_excel');
     }
+
+
     public function import_excel_post(Request $request)
-    {
-        // 1. اعتبارسنجی فایل
-        $request->validate([
-            'excel' => 'required|file|mimes:xlsx,xls,csv',
-        ]);
-        
+{
+    $request->validate([
+        'excel' => 'required|file|mimes:xlsx,xls,csv',
+    ]);
 
-        // 2. گرفتن فایل
-        $file = $request->file('excel');
-        // 3. خواندن محتوای اکسل
-        $rows = Excel::toArray([], $file); 
-        // خروجی چیزی شبیه:
-        // $rows[0] = آرایه ردیف‌های شیت اول
+    $rows = Excel::toArray([], $request->file('excel'));
+    $data = $rows[0] ?? [];
 
-        $data = $rows[0] ?? []; // فقط شیت اول
-            $num=0;
-        // اگر ردیف اول هدر است و نباید ذخیره شود می‌تونی از اندیس 1 شروع کنی
+    $created = 0;
+    $existing = 0;
+    $invalid = [];
+
+    DB::transaction(function () use ($data, &$created, &$existing, &$invalid) {
+        $seen = []; // موبایل‌های تکراری داخل خود فایل
+
         foreach ($data as $index => $row) {
+            if ($index == 0) continue; // هدر
 
-            // اگر سطر اول هدر است، این را فعال کن:
-             if ($index == 0) continue;
+            // ستون‌ها: A کدملی | B نام خانوادگی | C نام | D موبایل | E مبلغ
+            $meli       = str_pad($this->digits($row[0] ?? ''), 10, '0', STR_PAD_LEFT);
+            $last_name  = trim((string)($row[1] ?? ''));
+            $first_name = trim((string)($row[2] ?? ''));
+            $mobile     = $this->normalizeMobile($row[3] ?? '');
+            $amount     = (int) $this->digits($row[4] ?? '');
 
-             // نام =c   نام خانوادگی =d  کدملی=f  موبایل = f
-             $first_name = $row[2] ?? null;
-             $last_name = $row[3] ?? null;
-             $meli = $row[5] ?? null;
-             $mobile = $row[6] ?? null;
-             
-             // فرض: ستون A = ملی, B = فامیل, C = اسم, D = موبایل
-            // $meli = $row[0] ?? null;
-            // $last_name = $row[1] ?? null;
-            // $first_name = $row[2] ?? null;
-            // $mobile = $row[3] ?? null;
+            // ردیف خالی یا ردیف «مجموع» (موبایل ندارد)
+            if ($mobile === '') continue;
 
-            // اگر موبایل خالی بود، از این ردیف رد شو
-            if (empty($mobile)) {
-                continue;
-            }   
-
-            // 4. شرط: اگر شماره موبایل قبلاً در دیتابیس وجود دارد، ذخیره نکن
-            $exists = User::where('mobile', $mobile)->first();
-
-            if ($exists) {
-               $wallet= $exists->wallet;
-                
-                $transaction=new Transaction();
-                $transaction->user_id=$exists->id;
-                $transaction->value=$exists->wallet;
-                $transaction->description='شارژ '.$exists->name.' '.$exists->family.'از'.$wallet.'به'.'50000000'.'شارژ شد';
-                $transaction->type=21;
-                $transaction->save();
-                
-                $exists->adad=0;
-                //ba har exceel
-                $exists->wallet=50000000;
-                $exists->init_wallet=50000000;
-                $exists->type=4;
-                $exists->save();
+            // موبایل یا مبلغ نامعتبر
+            if (!preg_match('/^09\d{9}$/', $mobile) || $amount <= 0) {
+                $invalid[] = $index + 1; // شماره ردیف در اکسل
                 continue;
             }
-            // 5. ذخیره در دیتابیس
-            $user=new User();
-            $user->name=$first_name;
-            $user->family=$last_name;
-            $user->mobile=$mobile;
-            $user->nationalcode=$meli;
-            $user->adad=0;
-            $user->active=1;
-            // ba har exceel
-            $user->wallet=50000000;
-            $user->init_wallet=50000000;
-            $user->type=4;
 
+            // موبایل تکراری داخل همین فایل
+            if (isset($seen[$mobile])) {
+                $existing++;
+                continue;
+            }
+            $seen[$mobile] = true;
 
+            // کاربر قبلی: کاری باهاش نداریم
+            if (User::where('mobile', $mobile)->exists()) {
+                $existing++;
+                continue;
+            }
+
+            $user = new User();
+            $user->name = $first_name;
+            $user->family = $last_name;
+            $user->mobile = $mobile;
+            $user->nationalcode = $meli;
+            $user->adad = 0;
+            $user->active = 1;
+            $user->wallet = $amount;
+            $user->init_wallet = $amount;
+            $user->type = 4;
             $user->save();
-            $num+=1;
-           
-        }
 
-        return back()->with('suc', 'ایمپورت فایل با موفقیت انجام شد
-         تعداد ذخیره '.$num.'');
+            $created++;
+        }
+    });
+
+    $msg = "ایمپورت انجام شد. کاربر جدید: $created ، ردشده (قبلاً وجود داشت یا تکراری بود): $existing";
+    if ($invalid) {
+        $msg .= ' | ردیف‌های نامعتبر: ' . implode('، ', $invalid);
     }
+
+    return back()->with('suc', $msg);
+}
+
+// تبدیل ارقام فارسی/عربی به انگلیسی و حذف هر چیز غیر عددی
+private function digits($v): string
+{
+    $v = str_replace(
+        ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹','٠','١','٢','٣','٤','٥','٦','٧','٨','٩'],
+        [0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9],
+        (string)$v
+    );
+    return preg_replace('/\D/', '', $v);
+}
+
+// خروجی: 09xxxxxxxxx
+private function normalizeMobile($v): string
+{
+    $v = $this->digits($v);
+    if ($v === '') return '';
+    if (str_starts_with($v, '98')) return '0' . substr($v, 2);
+    if (strlen($v) === 10 && $v[0] === '9') return '0' . $v; // صفر اولش حذف شده
+    return $v;
+}
+
     public function b_order(){
+        
         $order=Order::where('status',2)->pluck('id');
         $user_trans = Transaction::where('type',15)
         ->whereBetween('tarikh_ghest', ['2026-07-23 00:00:00',
@@ -107,6 +123,8 @@ class AdminController extends Controller
         ->whereIn('order_id',$order)
         ->sum('value');
         return $user_trans;
+
+
         $transactions=Transaction::whereBetween('tarikh_ghest', [
             '2026-07-23 00:00:00',
                 '2026-08-22 23:59:59'
@@ -149,4 +167,115 @@ class AdminController extends Controller
 return $jam;
 
     }
+
+    
+    public function orders_test(Request $request)
+    {
+
+$settlementMonth = $request->get(
+    'settlement_month',
+    Jalalian::now()->getMonth()
+);
+        $selectedMonth = $request->get('month', Jalalian::now()->getMonth());
+
+        $ekhtelaf = $settlementMonth - $selectedMonth;
+        // return $ekhtelaf;
+    
+        $year = Jalalian::now()->getYear();
+    
+        // روز اول ماه انتخاب شده
+        $startJalali = new Jalalian($year, $selectedMonth, 1);
+    
+        // تعداد روزهای ماه انتخاب شده
+        $daysInMonth = $startJalali->getMonthDays();
+    
+        // روز آخر ماه انتخاب شده
+        $endJalali = new Jalalian(
+            $year,
+            $selectedMonth,
+            $daysInMonth
+        );
+    
+        // تبدیل به تاریخ میلادی
+        $startDate = $startJalali->toCarbon()->startOfDay();
+        $endDate = $endJalali->toCarbon()->endOfDay();
+    
+        $shops = Shop::where('display', 1)->get();
+    
+        foreach ($shops as $shop) {
+    
+            $total = Order::where('status', 2)
+                ->where('shop_id', $shop->id)
+                ->whereBetween('created_at', [
+                    $startDate,
+                    $endDate
+                ])
+                ->sum('price');
+    
+            $shop['order_m'] = $total;
+    
+            $condition = Condition::where('shop_id', $shop->id)->first();
+    
+            $shop['month'] = $condition->month ?? 0;
+    
+            if ($condition && $condition->month < $ekhtelaf) {
+
+                $maah = 0;
+            
+            } elseif($condition && $condition->month >= $ekhtelaf) {
+            
+                $maah = $condition && $condition->month > 0
+                    ? $total / $condition->month
+                    : 0;
+            }
+            
+            $shop['price'] = $maah;
+        }
+    
+        $months = [
+            1 => 'فروردین',
+            2 => 'اردیبهشت',
+            3 => 'خرداد',
+            4 => 'تیر',
+            5 => 'مرداد',
+            6 => 'شهریور',
+            7 => 'مهر',
+            8 => 'آبان',
+            9 => 'آذر',
+            10 => 'دی',
+            11 => 'بهمن',
+            12 => 'اسفند',
+        ];
+    
+        return view('admin.new.orders_test', compact(
+            'shops',
+            'months',
+            'selectedMonth',
+            'settlementMonth'
+        ));
+    }
+    // if($condition->month < $ekhtelaf)
+    //     $maah=0;
+    //     else
+    //     $maah=$total/$condition;
+    // $shop['price']=$maah;
+
+
+    public function excel_user()
+{
+    $users = User::where('type', 1)
+        ->orderBy('id', 'desc')
+        ->get();
+
+    return view('admin.partials.excel_user', compact('users'));
+}
+
+public function excel_user_download()
+{
+    return Excel::download(
+        new ExcelUsers(),
+        'users.xlsx'
+    );
+}
+
 }

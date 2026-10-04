@@ -181,7 +181,11 @@
             <div class="card text-center" style="background-color: #e0f7fa;">
                 <div class="card-body">
                     <h5 class="card-title">کل فروش با احتساب تخفیف</h5>
+                    @if ($shop->transaction_type == 2)
+                    <p class="card-text display-6" id="kol_off">{{number_format($value-(($value*$contract->off)/100))}}</p>
+                    @else
                     <p class="card-text display-6" id="kol_off">{{number_format($value-$value_off)}}</p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -199,7 +203,11 @@
             <div class="card text-center" style="background-color: #ffcdd2;">
                 <div class="card-body">
                     <h5 class="card-title">مانده حساب</h5>
+                    @if ($shop->transaction_type == 2)
+                    <p class="card-text display-6" id="mande">{{number_format(($value-(($value*$contract->off)/100))-$dadim)}}</p>
+                    @else
                     <p class="card-text display-6" id="mande">{{number_format($value-$value_off-$dadim)}}</p>
+                    @endif
                 </div>
             </div>
         </div>

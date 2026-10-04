@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\AuditExport;
+use App\Exports\datis_old;
 use App\Exports\UsersTransExport;
 use App\Models\Category;
 use App\Models\CategoryShop;
@@ -45,6 +46,11 @@ use App\Models\Condition;
 use App\Models\Contract;
 use App\Exports\OrderExport;
 use App\Exports\ShopRizOrderExport;
+use App\Exports\UsersTransExport2;
+use App\Models\Datis2Order;
+use App\Models\Datis2ProductOrder;
+use App\Models\Product_orders;
+use App\Models\Products;
 use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
@@ -272,6 +278,117 @@ $users_count = $users_ids->count();
              
     return view('drhadizade3',compact('users','shops_count','users_count','elmi_count',
     'karmand_count','elmi_b_count','karmand_b_count','elmi_order','karmand_order','elmi_b_order','karmand_b_order','persianMonths','selectedMonth'));
+    }
+
+    public function sale_datis()
+{
+    // 1. فقط محصولات مربوط به داتیس
+    $products = Products::where('status', 1)
+        ->where('type', 1)
+        ->get();
+
+    // 2. فقط خریدهای داتیس
+    $productOrders = Product_orders::with([
+        'order.user',
+        'product'
+    ])
+    ->whereHas('order', function ($query) {
+        $query->where('shop_id', 8)
+            ->where('status', 10)
+            ;
+    })
+    ->orderBy('id', 'desc')
+    ->get();
+
+    // 3. گروه‌بندی بر اساس کاربر + نوبت داتیس
+    $grouped = $productOrders->groupBy(function ($item) {
+
+        return $item->order->user_id . '_' . $item->order->datis_turn;
+
+    });
+
+    // 4. ساخت آرایه برای ویو
+    $rows = [];
+
+    foreach ($grouped as $orders) {
+
+        $firstOrder = $orders->first();
+
+        if (!$firstOrder || !$firstOrder->order || !$firstOrder->order->user) {
+            continue;
+        }
+
+        $user = $firstOrder->order->user;
+        $order = $firstOrder->order;
+
+        $row = [
+            'name' => $user->name ?? '',
+            'family' => $user->family ?? '',
+            'mobile' => $user->mobile ?? '',
+            'datis_turn' => $order->datis_turn ?? '',
+        ];
+
+        // 5. تعداد هر محصول برای همین کاربر و همین نوبت
+        foreach ($products as $product) {
+
+            $count = $orders
+                ->where('product_id', $product->id)
+                ->sum('num');
+
+            $row['product_' . $product->id] = $count;
+        }
+
+        $rows[] = $row;
+    }
+
+    return view('admin.list_datis', compact(
+        'products',
+        'rows'
+    ));
+}
+
+    public function datisExcel_old()
+{
+    return Excel::download(
+        new datis_old(),
+        'داتیس.xlsx'
+    );
+}
+
+    public function sale_datis2()
+    {
+        // 1. گرفتن همه محصولات فعال
+        $products = Products::where('status', 1)->get();
+        
+        // 2. گرفتن همه سفارش‌های داتیس 2 با محصولات
+        $orders = Datis2Order::with('products.product')
+            ->where('status', 10)
+            ->orderBy('id', 'desc')
+            ->get();
+        
+        // 3. ساخت آرایه برای ویو
+        $rows = [];
+        
+        foreach ($orders as $order) {
+            $row = [
+                'name' => $order->name ?? '',
+                'family' => $order->family ?? '',
+                'mobile' => $order->mobile ?? '',
+                'meli_code' => $order->meli_code ?? '',
+                'datis_turn' => $order->datis_turn ?? '',
+            ];
+            
+            // 4. برای هر محصول، تعداد خریداری شده را پیدا کن
+            foreach ($products as $product) {
+                $productOrder = $order->products->firstWhere('product_id', $product->id);
+                $count = $productOrder ? $productOrder->num : 0;
+                $row['product_' . $product->id] = $count;
+            }
+            
+            $rows[] = $row;
+        }
+        
+        return view('admin.list_datis2', compact('products', 'rows'));
     }
 
     public function add_comment(Request $req,$id){
@@ -1270,12 +1387,12 @@ $users_count = $users_ids->count();
 
         $shop->slug_code = $shop->id;
         $shop->save();
-        $categories = Category::get();
-        foreach ($categories as $category) {
-            $id = $category->id;
-            if (isset($request->$id)) {
+        if ($request->has('categories')) {
+
+            foreach ($request->categories as $categoryId) {
+        
                 $category_shop = new CategoryShop();
-                $category_shop->category_id = $id;
+                $category_shop->category_id = $categoryId;
                 $category_shop->shop_id = $shop->id;
                 $category_shop->save();
             }
@@ -1323,7 +1440,7 @@ $users_count = $users_ids->count();
             $shop->telephone = $request->phone;
             $shop->address = $request->address;
             $shop->decription = $request->description;
-            $shop->off = $request->off;
+            $shop->off_title = $request->off;
             // $shop->user_off = $request->user_off;
             $shop->display = $request->display;
             $shop->refferer_id = $request->marketer;
@@ -1366,20 +1483,18 @@ $users_count = $users_ids->count();
         }
         $shop->save();
         if ($user->hasRole('admin')) {
-            $deletes = CategoryShop::where('shop_id', $shop->id)->get();
-            foreach ($deletes as $delete) {
-                $delete->delete();
-            }
-            $categories = Category::get();
-            foreach ($categories as $category) {
-                $id = $category->id;
-                if (isset($request->$id)) {
-                    $category_shop = new CategoryShop();
-                    $category_shop->category_id = $id;
-                    $category_shop->shop_id = $shop->id;
-                    $category_shop->save();
-                }
-            }
+         // حذف دسته‌بندی‌های قبلی فروشگاه
+CategoryShop::where('shop_id', $shop->id)->delete();
+
+// ثبت دسته‌بندی‌های جدید
+if ($request->has('categories')) {
+    foreach ($request->categories as $categoryId) {
+        $category_shop = new CategoryShop();
+        $category_shop->category_id = $categoryId;
+        $category_shop->shop_id = $shop->id;
+        $category_shop->save();
+    }
+}
             if (isset($request->shaba)) {
                 $ba = BankAccount::where('shop_id', $shop->id)->where('status', '1')->first();
                 if (!$ba) {
@@ -1533,6 +1648,7 @@ $users_count = $users_ids->count();
             $value += $order->price;
         }
         $shop = Shop::find($id);
+        $contract=Contract::where('shop_id',$id)->first();
 
         $maDadim = Transaction::where('shop_id', $id)->where('type', 5)->get();
         $maDadim_off = Transaction::where('shop_id', $id)->where('type', 18)->get();
@@ -1570,7 +1686,7 @@ $users_count = $users_ids->count();
                 $priceItem['price'] = 0;
             }
         }
-        return view('admin.shop_audit', compact('transactions', 'maDadim', 'maDadim_off', 'shop', 'value', 'dadim', 'value_off', 'mande'));
+        return view('admin.shop_audit', compact('transactions', 'maDadim', 'maDadim_off','contract','shop', 'value', 'dadim', 'value_off', 'mande'));
     }
 
 
@@ -1802,9 +1918,9 @@ $users_count = $users_ids->count();
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'خطا در تبدیل تاریخ.');
         }
-
         
-            $users=User::whereIn('type',[1,2,3,4])->get();
+        
+        $users=User::whereIn('type',[1,2,3,4])->get();
         // محاسبه مجموع value برای هر کاربر
         foreach ($users as $user) {
             $order=Order::where('user_id',$user->id)->where('status',2)->pluck('id');
@@ -1814,7 +1930,7 @@ $users_count = $users_ids->count();
             ->sum('value');
             $user['trans'] = $user_trans;
         }
-    
+        
         $data = collect();
         foreach ($users as $user) {
             $data->push([
@@ -1825,7 +1941,101 @@ $users_count = $users_ids->count();
                 'جمع قسط این ماه' => $user->trans,
                 'شارژ اولیه' => $user->init_wallet,
                 'نوع' => $user->type,
+                
+            ]);
+        }
+        
+        return $data;
+    }
 
+    public function users_trans2()
+    {
+        return view('admin.users_trans2');
+    }
+    
+    public function users_trans_excel2(Request $request)
+    {
+        $from = $request->input('from_date');
+    
+        $data = $this->generateUsersTransData2($from);
+    
+        if ($data instanceof \Illuminate\Http\RedirectResponse) {
+            return $data;
+        }
+    
+        return Excel::download(
+            new UsersTransExport2($data),
+            'لیست-اقساط-کاربران-' . $from . '.xlsx'
+        );
+    }
+    
+    private function generateUsersTransData2($from)
+    {
+        // اعتبارسنجی فرمت
+        if (!preg_match('#^\d{4}-(0[1-9]|1[0-2])$#', $from)) {
+            return redirect()->back()->with('error', 'فرمت تاریخ باید مثل 1404-01 باشد.');
+        }
+    
+        [$fromYear, $fromMonth] = explode('-', $from);
+        $fromYear  = (int) $fromYear;
+        $fromMonth = (int) $fromMonth;
+    
+        try {
+            $start = new \Morilog\Jalali\Jalalian($fromYear, $fromMonth, 1);
+    
+            $startOfMonth = $start->toCarbon();
+            $endOfMonth   = $start->getEndDayOfMonth()->toCarbon()->setTime(23, 59, 59);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'خطا در تبدیل تاریخ.');
+        }
+    
+        $users = User::whereIn('type', [1, 2, 3, 4])->get();
+    
+        $data = collect();
+    
+        foreach ($users as $user) {
+    
+            // داتیس نوبت ۱
+            $order_datis1 = Order::where('user_id', $user->id)
+                ->where('shop_id', 8)
+                ->where('status', 10)
+                ->where('datis_turn', 1)
+                ->sum('price');
+    
+            $datis1 = $order_datis1 / 4;
+    
+            // داتیس نوبت ۲
+            // $order_datis2 = Order::where('user_id', $user->id)
+            //     ->where('shop_id', 8)
+            //     ->where('status', 10)
+            //     ->where('datis_turn', 2)
+            //     ->sum('price');
+    
+            // $datis2 = $order_datis2 / 4;
+    
+            // اقساط این ماه
+            $orderIds = Order::where('user_id', $user->id)
+                ->where('status', 2)
+                ->pluck('id');
+    
+            $userTrans = Transaction::where('user_id', $user->id)
+                ->where('type', 15)
+                ->whereBetween('tarikh_ghest', [$startOfMonth, $endOfMonth])
+                ->whereIn('order_id', $orderIds)
+                ->sum('value');
+    
+     
+            $data->push([
+                'نام'              => $user->name ?? '---',
+                'فامیل'            => $user->family ?? '---',
+                'موبایل'           => $user->mobile ?? '---',
+                'کد ملی'           => $user->nationalcode ?? '---',
+                'داتیس یک'         => $datis1,
+                // 'داتیس دو'         => $datis2,
+                'قسط عادی این ماه'      => $userTrans,
+                'جمع کل قسط'          => $datis1 + $userTrans,
+                'شارژ اولیه'       => $user->init_wallet,
+                'نوع'              => $user->type,
             ]);
         }
     

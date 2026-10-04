@@ -23,10 +23,12 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BuyController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NewBuyController;
+use App\Http\Controllers\productController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StoreController;
+use App\Http\Controllers\SurveyController;
 use Maatwebsite\Excel\Facades\Excel;
 
 /*
@@ -49,6 +51,53 @@ use Maatwebsite\Excel\Facades\Excel;
     Route::get('/contract_test', [ShopController::class, 'contract_test']);
 
     Route::get('/list', [ShopController::class, 'listShop']);
+    
+//     Route::get('/datis', [ShopController::class, 'datis']);
+//     Route::post('/datis/buy', [ShopController::class, 'datisBuy'])->name('datis.buy');
+    // Route::get('/datis/excel', [ShopController::class, 'datisExcel'])
+    // ->name('datis.excel');
+
+//     Route::get('/Arde', [ShopController::class, 'Arde']);
+//     Route::post('/arde/buy', [ShopController::class, 'ardeBuy'])
+//     ->name('arde.buy');
+
+Route::get('/sale/arde/excel', [ShopController::class, 'ardeExcel'])
+    ->name('sale.arde.excel');
+
+Route::get('/sale/honey/excel', [ShopController::class, 'honeyExcel'])
+    ->name('sale.honey.excel');
+
+//     Route::get('/honey', [ShopController::class, 'Honey'])
+//     ->name('honey');
+// Route::post('/honey/buy', [ShopController::class, 'honeyBuy'])
+//     ->name('honey.buy');
+
+    Route::get('/aroosha', [ShopController::class, 'Aroosha'])
+    ->name('aroosha');
+Route::post('/aroosha/buy', [ShopController::class, 'arooshaBuy'])
+    ->name('aroosha.buy');
+
+    Route::get('/kerem', [ShopController::class, 'Kerem'])
+    ->name('kerem');
+Route::post('/kerem/buy', [ShopController::class, 'keremBuy'])
+    ->name('kerem.buy');
+
+    Route::get('/stock', [ShopController::class, 'stock'])->name('stock');
+    Route::post('/stock_submit', [ShopController::class, 'stock_submit'])->name('stock.submit');
+
+    Route::get('/datis_orders', [ShopController::class, 'datis_orders'])->middleware('auth');
+
+    // Route::get('/datis2', [ShopController::class, 'datis2']);
+    // Route::post('/datis2/buy', [ShopController::class, 'datisBuy2'])->name('datis2.buy');
+    // Route::get('/datis2/excel', [ShopController::class, 'datisExcel2'])
+    // ->name('datis2.excel');
+
+
+    Route::get('/survey/mobile', [SurveyController::class, 'index'])
+    ->name('survey');
+
+Route::post('/survey/submit', [SurveyController::class, 'submit'])
+    ->name('survey.submit');
 
     Route::get('/role', [DashboardController::class, 'role']);
 
@@ -64,6 +113,7 @@ Route::get('/contact', [IndexController::class, 'contact']);
 Route::post('/send-contact', [IndexController::class, 'send_contact']);
 Route::get('/about-us', [IndexController::class, 'about']);
 Route::get('/sharayet', [IndexController::class, 'sharayet'])->middleware('auth');
+
 Route::post('/sharayet', [IndexController::class, 'sharayet_post']);
 
 Route::get('/login', [AuthController::class, 'login'])->name("login");
@@ -111,7 +161,18 @@ Route::get('/mablagh_ghest', [TransactionController::class, 'mablagh_ghest'])->m
 
 Route::prefix('/admin')->middleware('auth')->group(function () {
     
+    Route::get('/orders_test', [AdminController::class, 'orders_test']);
+    
+    Route::get('/excel_user', [AdminController::class, 'excel_user']);
+    Route::get('/excel_user/download', [AdminController::class, 'excel_user_download'])
+    ->name('admin.excel_user.download');
 
+    Route::get('/survey', [SurveyController::class, 'survey']);
+    
+    Route::get('/stock', [SurveyController::class, 'stock']);
+
+    Route::get('/contacts', [IndexController::class, 'contacts']);
+    
     Route::get('/import_excel', [AdminController::class, 'import_excel']);
     Route::post('/import_excel', [AdminController::class, 'import_excel_post']);
 
@@ -134,7 +195,29 @@ Route::prefix('/admin')->middleware('auth')->group(function () {
 
     Route::get('/filter', [DashboardController::class, 'index2'])->middleware(['role:admin']);
     Route::get('/list/sale', [DashboardController::class, 'index']);
+    Route::get('/list/sale_datis', [DashboardController::class, 'sale_datis']);
+    Route::get('/datis/excel_old', [DashboardController::class, 'datisExcel_old'])
+    ->name('admin.datis.excel_old');
+    Route::get('/list/sale_datis2', [DashboardController::class, 'sale_datis2']);
     Route::post('/add_comment/{id}', [DashboardController::class, 'add_comment']);
+
+    Route::get('/sale/arde', [productController::class, 'sale_arde'])
+    ->name('sale.arde');
+
+Route::get('/sale/honey', [productController::class, 'sale_honey'])
+    ->name('sale.honey');
+
+    Route::get('/sale/arde/excel', [productController::class, 'ardeSaleExcel'])
+    ->name('sale.arde.excel');
+
+Route::get('/sale/honey/excel', [productController::class, 'honeySaleExcel'])
+    ->name('sale.honey.excel');
+
+Route::get('/sale/kerem', [productController::class, 'sale_kerem'])
+    ->name('sale.kerem');
+
+Route::get('/sale/aroosha', [productController::class, 'sale_aroosha'])
+    ->name('sale.aroosha');
 
     Route::post('/order_excel', [DashboardController::class, 'orderExcel'])
     ->name('order.excel')
@@ -146,6 +229,8 @@ Route::prefix('/admin')->middleware('auth')->group(function () {
     Route::get('/users', [DashboardController::class, 'users']);
     Route::post('/users/trans/excel', [DashboardController::class, 'users_trans_excel']);
     Route::get('/users/trans', [DashboardController::class, 'users_trans']);
+    Route::post('/users/trans/excel2', [DashboardController::class, 'users_trans_excel2']);
+    Route::get('/users/trans2', [DashboardController::class, 'users_trans2']);
     // Route::post('/users/trans', [DashboardController::class, 'users_trans_post']);
     Route::get('/users/audit/{id}', [DashboardController::class, 'userAudit']);
     Route::get('/users/logs', [DashboardController::class, 'users_logs']);

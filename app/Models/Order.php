@@ -31,15 +31,20 @@ class Order extends Model
     }
 
 
-    public function user()
-    {
-        return $this->belongsTo(Shop::class, 'shop_id');
-    }
+    public function productOrders()
+{
+    return $this->hasMany(Product_orders::class, 'order_id');
+}
 
-    public function shop()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
+    public function user()
+{
+    return $this->belongsTo(User::class, 'user_id');
+}
+
+public function shop()
+{
+    return $this->belongsTo(Shop::class, 'shop_id');
+}
     //
     public function getuservalue()
     {

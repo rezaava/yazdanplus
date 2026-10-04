@@ -404,14 +404,14 @@
     </div> -->
                         @endif
                         <button class="btn btn-theme payment-submit-btn price"
-                            @if ($wallet < $payAll) disabled @endif type="submit"
+                            @if ($wallet < $payAll && $shop->more_sale ==0 ) disabled @endif type="submit"
                             data-animation="fadeInUp" data-delay="500ms" data-duration="1000ms">
 
                             @if ($order->getPayValue() == 0)
                             تکمیل پرداخت
                             @else
                             @if ($condition->advance_payment == 0)
-                            @if ($wallet >= $payAll)
+                            @if ($wallet >= $payAll || $shop->more_sale ==1)
                             خرید نهایی
 
                             @else

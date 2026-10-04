@@ -185,7 +185,7 @@
 
 
         <!-- PWA Install Button -->
-        <div id="pwaInstallContainer" style="display: none; position: fixed; bottom: 20px; left: 20px; z-index: 9999;">
+       {{--  <div id="pwaInstallContainer" style="display: none; position: fixed; bottom: 20px; left: 20px; z-index: 9999;">
         <button id="pwaInstallButton" style="background: linear-gradient(135deg, #e30613, #b0050f); color: white; border: none; padding: 12px 24px; border-radius: 50px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-weight: bold; font-family: inherit;">
             📱 نصب برنامه روی صفحه اصلی
         </button>
@@ -240,7 +240,7 @@
             console.log('برنامه با موفقیت نصب شد');
             // می‌تونی یه نوتیفیکیشن کوچیک نشون بدی
         });
-    </script>
+    </script> --}}
 </body>
 
 </html>

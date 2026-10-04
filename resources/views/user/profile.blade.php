@@ -67,7 +67,7 @@
                     <!-- User Information-->
                     <div class="card user-info-card">
                         <div class="card-body p-4 d-flex align-items-center">
-                            <div class="user-profile me-3"><img @if ($profile) src='{{ asset($profile->address) }}' @else src='' @endif  alt="profile"
+                            <div class="user-profile me-3"><img @if ($profile) src='{{ asset($profile->address) }}' @else src='{{ asset('user_profile/user.webp') }}' @endif  alt="profile"
                                     style="width: 80px;height:80px;">
                             </div>
                             <div class="user-info">
@@ -129,7 +129,7 @@
                                 <div class="data-content"> </div>
                                 @endif
                             </div>
-                            <div class="single-profile-data d-flex align-items-center justify-content-between">
+                            {{--  <div class="single-profile-data d-flex align-items-center justify-content-between">
                                 <div class="title d-flex align-items-center"><i class="fa-solid fa-sitemap"></i><span>کدمعرف
                                     </span>
                                 </div>
@@ -140,16 +140,16 @@
                                     <a class="btn btn-theme w-100" style="font-size:12px;font-weight: 1000;" href="/referrer2">ثبت کاربر معرف</a>
                                 </div>
                                 @endif
-                            </div>
-                            <br><br>
-                            <div class="single-profile-data d-flex align-items-center justify-content-between">
+                            </div>  --}}
+                            
+                            <!-- <div class="single-profile-data d-flex align-items-center justify-content-between">
                                 <div class="title d-flex align-items-center"><i class="fa-solid fa-qrcode"></i><span>کدمعرفی
                                     </span></div>
                                     <div class="copy-text">
                                             <input type="text" class="text form-control" value='{{ asset("referrer_user/$user->referrer") }}' dir="ltr"/>
                                             <button><i class="fa fa-clone"></i></button>
                                         </div>
-                            </div>
+                            </div> -->
                             <!-- Edit Profile-->
                             
                            

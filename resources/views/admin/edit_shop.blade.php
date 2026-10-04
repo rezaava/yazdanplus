@@ -177,8 +177,8 @@ input[type="radio"] {
                                 <input type="number" class="form-control" value="{{ $shop->profit }} " name="profit"
                                     id="profit" placeholder="سود ماهانه روی اقساط">
 
-                                <label for="off">تخفیف</label>
-                                <input type="text" class="form-control" value="{{ $shop->off }} " name="off"
+                                <label for="off"> عنوان تخفیف </label>
+                                <input type="text" class="form-control" value="{{ $shop->off_title }} " name="off"
                                     id="off" placeholder="تخفیف">
 
 
@@ -193,14 +193,25 @@ input[type="radio"] {
                                 <br>
                                 <br>
                                 <p>دسته بندی</p>
+
                                 @foreach ($categories as $category)
-                                <label for="category{{ $category->id }}">{{ $category->name }}</label>
-                                <input type="checkbox" name="{{ $category->id }}" value="{{ $category->id }}"
-                                    id="category{{ $category->id }}"
-                                    @foreach ($find_categorys as $find_category) @if ($find_category->category_id == $category->id)
-                                checked
-                                @endif @endforeach>
-                                <br>
+                                                                
+                                    <label for="category{{ $category->id }}">
+                                        {{ $category->name }}
+                                    </label>
+                                                                
+                                    <input type="checkbox"
+                                           name="categories[]"
+                                           value="{{ $category->id }}"
+                                           id="category{{ $category->id }}"
+                                           @foreach ($find_categorys as $find_category)
+                                               @if ($find_category->category_id == $category->id)
+                                                   checked
+                                               @endif
+                                           @endforeach>
+                                                                
+                                    <br>
+                                                                
                                 @endforeach
                                 <br>
                                 <br>

@@ -68,7 +68,7 @@ class TransactionController extends Controller
                 $order['shop'] = '';
             }
             $order['time'] = $this->convertToPersianTime(
-                $order->status == '2' ? $order->updated_at : $order->created_at
+                $order->status == '2' ? $order->created_at : $order->created_at
             );
         }
 
@@ -79,7 +79,7 @@ class TransactionController extends Controller
     {
         $order = Order::find($id);
         $user = Auth::user();
-
+        
         // اگر پیدا نشد
         if (!$order) {
             return response()->json([
@@ -87,13 +87,14 @@ class TransactionController extends Controller
                 'message' => 'سفارش یافت نشد.'
             ], 404);
         }
-
+        
+        $shop=Shop::find($order->shop_id);
 
 
         $transactions_value = Transaction::where('order_id', $order->id)->sum('value');
 
 
-        if ($transactions_value > $user->wallet) {
+        if ($transactions_value > $user->wallet && $shop->more_sale ==0) {
 
             return response()->json([
                 'success' => false,
@@ -113,6 +114,7 @@ class TransactionController extends Controller
                     $order->save();
                     DB::commit();
 
+                    if($shop->id == 55){
                     $user2 = User::find(6);
                     $matn = 'yazdan';
                     SmsController::sendSms(
@@ -121,6 +123,7 @@ class TransactionController extends Controller
                         $matn,
                         $user2->mobile
                     );
+                }
 
                     return response()->json([
                         'success' => true,

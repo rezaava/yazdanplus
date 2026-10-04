@@ -16,7 +16,7 @@
     <div class="container mt-5">
         <div class="row">
             <div class="col-md-6">
-                <img class="mb-3 iimg" src="img/about-us.png.jpeg" alt="">
+                <img class="mb-3 img" src="img/aboutus.jpg" alt="">
             </div>
             <div class="col-md-6">
                 <div class="card">

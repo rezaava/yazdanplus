@@ -35,7 +35,7 @@
                 </div>
             @if ($user)
             @if (!$user->hasRole('admin') && !$user->hasRole('shop_admin') && !$user->hasRole('shop_user'))
-            <div class="logo-wrapper2" style="width: 190px;text-align: center;margin-right: 10px;">
+            <div class="logo-wrapper2" style="width: 210px;text-align: center;margin-right: 10px;">
             <a class="text-muted top-menu-a wwallet @yield('wallet')" href="/wallet"><i
             class="fa-solid fa-wallet"></i>
             اعتبار
@@ -149,7 +149,7 @@
             @else
             <div class="user-profile-icon ms-2">
                 <a href="/profile"><img
-                        @if ($profile==null) src="#" @else src='{{ asset("$profile->address") }}' @endif
+                        @if ($profile==null) src="{{  asset('user_profile/user.webp') }}" @else src='{{ asset("$profile->address") }}' @endif
                         alt="profile"></a>
 
 

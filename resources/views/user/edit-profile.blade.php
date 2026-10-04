@@ -131,7 +131,7 @@
                                     <div class="title mb-2"><i class="fa-solid fa-calendar-alt"></i><span>تاریخ تولد</span></div>
                                     <div class="datepicker-container" style="z-index:1000;">
                                     <input type="text" name="fromDate" id="datepicker-input-1" class="form-control"
-                                        placeholder="از تاریخ" readonly style="cursor: pointer" >
+                                        placeholder="1356/06/04" readonly style="cursor: pointer" >
                                     <div class="datepicker-box" id="datepicker-box-1"></div>
                                     </div>
                                     @error('fromDate')

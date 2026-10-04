@@ -208,12 +208,12 @@ class BuyController extends Controller
 
         if ($condition->advance_payment == 0) {
 
-            if ($user->wallet < $baghimande) {
+            if ($user->wallet < $baghimande && $shop->more_sale ==0) {
                 return redirect('/wallet');
             }
             // $user->wallet -= $baghimande;
             // $user->save();
-            if ($user->wallet >= $baghimande) {
+            if ($user->wallet >= $baghimande || $shop->more_sale ==1) {
                 $code = rand(1111, 9999);
                 if ($order->shop_id == 8) {
                     $order->sms_code = 1111;

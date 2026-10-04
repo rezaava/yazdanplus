@@ -12,6 +12,14 @@
 
 @endsection
 
+@section('back')
+<a href="{{ url()->previous() }}" id="backButton" class="btn btn-outline-secondary btn-lg">
+    <span>
+        ←
+    </span>
+</a>
+@endsection
+
 @section('main')
 <div class="container">
   <div class="row justify-content-center">
@@ -180,14 +188,14 @@ $("#rizOrderBtn").on('click', function() {
         success: function(res) {
           if (res.success) {
 
-            // 🔥 سه‌رقمی کردن کل حساب و مانده حساب
+            //  سه‌رقمی کردن کل حساب و مانده حساب
             $("#dd").val(numberFormat(res.total_sales));
             $("#remaining").val(numberFormat(res.remaining));
-            $("#off-total").val(numberFormat(res.off));
-            $("#off").val(numberFormat(res.remaining-res.off));
+            $("#off-total").val(numberFormat(res.off_total));
+            $("#off").val(numberFormat(res.off));
 
             // برای چک کردن محدودیت برداشت
-            $("#price").attr('data-remaining', res.off);
+            $("#price").attr('data-remaining', res.off_total);
           } else {
             alert(res.message || 'خطا در محاسبه');
           }

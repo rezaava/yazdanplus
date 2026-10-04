@@ -213,7 +213,7 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="off">تخفیف</label>
+                                <label for="off"> عنوان تخفیف </label>
                                 <input type="text" name="off"
                                     class="form-control @error('off') is-invalid @enderror"
                                     id="off" value="{{ old('off') }}">

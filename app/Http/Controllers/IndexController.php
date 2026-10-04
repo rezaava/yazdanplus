@@ -77,7 +77,7 @@ class IndexController extends Controller
             $user = null;
             $profile = null;
         }
-        $categories = Category::where('display', 1)->get();
+        $categories = Category::where('display', 1) ->orderBy('sort', 'asc')->get();
         foreach ($categories as $category) {
             $img = Images::find($category->icon_id)->address;
             $category['image'] = $img;
@@ -115,6 +115,11 @@ class IndexController extends Controller
 
         return view('contact', compact('user','profile'));
     }
+    public function contacts()
+    {   
+        $contacts=Contact::get();
+        return view('admin.new.contacts', compact('contacts'));
+    }
     public function about()
     {
         $user = Auth::user();
@@ -129,35 +134,36 @@ class IndexController extends Controller
         }
         return view('about-us', compact('user', 'profile'));
     }
-    public function send_contact(request $req)
+    public function send_contact(Request $req)
     {
         $user = Auth::user();
+        
         if ($user) {
             $validator = Validator::make(request()->all(), [
-                'name' => 'required|alpha',
-                'family' => 'required|alpha',
+                'name' => 'required',
+                'family' => 'required',
                 'text' => 'required|string',
             ], [
                 'name.required' => 'نام الزامی است',
                 'family.required' => 'فامیل الزامی است',
                 'text.required' => 'پیام خود را بنویسید',
-                'mobile.required' => 'موبایل الزامی است',
-                'mobile.numeric' => 'موبایل عددی باشد',
-                'mobile.digits' => 'موبایل 11 رقم باشه',
             ]);
+            
             if ($validator->fails()) {
-                return redirect()->back()->withErrors($validator);
+                return redirect()->back()->withErrors($validator)->withInput();
             }
+            
             $contact = new Contact;
             $contact->name = $req->name;
             $contact->family = $req->family;
             $contact->text = $req->text;
             $contact->mobile = $user->mobile;
             $contact->save();
+            
         } else {
             $validator = Validator::make(request()->all(), [
-                'name' => 'required|alpha',
-                'family' => 'required|alpha',
+                'name' => 'required',
+                'family' => 'required',
                 'text' => 'required|string',
                 'mobile' => 'required|numeric|digits:11',
             ], [
@@ -168,9 +174,11 @@ class IndexController extends Controller
                 'mobile.numeric' => 'موبایل عددی باشد',
                 'mobile.digits' => 'موبایل 11 رقم باشه',
             ]);
+            
             if ($validator->fails()) {
-                return redirect()->back()->withErrors($validator);
+                return redirect()->back()->withErrors($validator)->withInput();
             }
+            
             $contact = new Contact;
             $contact->name = $req->name;
             $contact->family = $req->family;
@@ -178,7 +186,9 @@ class IndexController extends Controller
             $contact->mobile = $req->mobile;
             $contact->save();
         }
-        return redirect()->back()->withErrors("نظر شما با موفقیت ثبت شد");
+        
+        // ✅ پیام موفقیت با with()
+        return redirect()->back()->with('success', 'نظر شما با موفقیت ثبت شد. از ارتباط شما سپاسگزاریم 🙏');
     }
     public function sharayet()
     {
